@@ -1,0 +1,147 @@
+html {
+    font-family: 'Raleway';
+    font-size: 22px;
+    color: white;
+    box-sizing: border-box;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin: 0;
+}
+
+h2 {
+    font-size: 1.5rem;
+}
+
+body {
+    font-size: 1rem;
+    margin: 0;
+}
+
+table {
+    width: 90%;
+}
+
+.btn {
+    margin-top: 10px;
+}
+
+.site {
+    /* min-height: 100vh; */
+    display: flex;
+    /* flex-grow: 1; */
+    flex-direction: column;
+    align-items: center;
+}
+
+a {
+    text-decoration: none !important;
+    color: white;
+}
+
+a:hover {
+    text-decoration: underline !important;
+    cursor: pointer;
+}
+
+button {
+    width: auto;
+}
+
+button:hover {
+    cursor: pointer;
+
+}
+
+.content-distance {
+    padding-left: 6rem;
+    padding-right: 6rem;
+}
+
+/* #region head */
+header {
+    background-color: rgb(28, 15, 80);
+    color: white;
+}
+
+.head-container {
+    height: 8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+
+.head-logo {
+    width: 8rem;
+}
+
+main {
+    width: 100%;
+    min-height: calc(100vh - 12rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    background-color: darkslategray;
+}
+
+
+footer {
+    background-color: rgb(28, 15, 80);
+    color: white;
+}
+
+.foot-container {
+    height: 4rem;
+    font-size: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@media (min-width: 1920px) {
+
+    .content-distance {
+        margin: auto;
+        max-width: 1920px;
+    }
+
+}
+@media (max-width: 1100px) {
+    html {
+        font-size: 20px;
+    }
+    .content-distance {
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+
+}
+@media (max-width: 900px) {
+    p {
+        display: none;
+    }
+    h1 {
+        font-size: 1.5rem;
+    }
+}
+@media (max-width: 700px) {
+    html {
+        font-size: 16px;
+    }
+    .content-distance {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+@media (max-width: 450px) {
+    h1 {
+        display: none;
+    }
+}
