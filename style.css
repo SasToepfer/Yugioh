@@ -17,6 +17,7 @@ h2 {
 body {
     font-size: 1rem;
     margin: 0;
+    background-color: rgb(28, 15, 80);
 }
 
 table {
@@ -28,9 +29,7 @@ table {
 }
 
 .site {
-    /* min-height: 100vh; */
     display: flex;
-    /* flex-grow: 1; */
     flex-direction: column;
     align-items: center;
 }
@@ -58,7 +57,9 @@ button:hover {
     padding-left: 6rem;
     padding-right: 6rem;
 }
-
+.o-hid {
+    overflow: hidden;
+}
 /* #region head */
 header {
     background-color: rgb(28, 15, 80);
@@ -121,27 +122,50 @@ footer {
         padding-left: 3rem;
         padding-right: 3rem;
     }
-
+    .load-with-offset {
+        margin-left: 0.5rem;
+        display: flex;
+        flex-direction: column;
+    }
 }
 @media (max-width: 900px) {
-    p {
-        display: none;
-    }
     h1 {
         font-size: 1.5rem;
     }
 }
 @media (max-width: 700px) {
     html {
-        font-size: 16px;
+        font-size: 20px;
     }
     .content-distance {
         padding-left: 1rem;
         padding-right: 1rem;
     }
-}
-@media (max-width: 450px) {
     h1 {
         display: none;
     }
+    .input-container {
+        flex-direction: column;
+    }
+    .closebtn {
+        display: none;
+        margin: 0 !important;
+    }
+}
+@media (max-width: 550px) {
+    .head-container img {
+        width: 4rem;
+    }
+    
+    .input-wrapper input{
+        width: 8rem;
+    }
+    .alert {
+        font-size: 0.75rem;
+        padding: 0;
+        margin: 0;
+        --bs-alert-padding-x: 0 !important;
+        --bs-alert-padding-y: 0 !important;
+    }
+    
 }

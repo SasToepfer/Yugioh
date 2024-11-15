@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/vnd.icon" href="img/gamestorelogo.png">
-    <title>Game Store</title>
+    <link rel="shortcut icon" href="img/Viscora.png" type="image/x-icon">
+    <title>Pokedex</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="styles/pokedex.css">
     <script src="scripts/template.js"></script>
@@ -19,38 +20,62 @@
 </head>
 
 <body onload="init()">
-        <header>
-            <headsection class="head-container content-distance">
-                <div class="logo-container">
-                    <img class="head-logo" src="img/Viscora.png" alt="gamestore logo">
-                    <h1> Pokedex</h1>
-                </div>
-            </headsection>
-        </header>
-        <main>
-            <div id="overlay" class="overlay" onclick="closeOverlay()">
-                <div class="overlay-content" onclick="event.stopPropagation()">
-                    <h3>Pokémon Details</h3>
-                    <p>Hier kommen die Details des ausgewählten Pokémons hin.</p>
-                    <button onclick="toggleOverlay()" class="btn btn-secondary">Schließen</button>
-                </div>
+    <header>
+        <headsection class="head-container content-distance">
+            <div class="logo-container">
+                <img class="head-logo" src="img/Viscora.png" alt="gamestore logo">
+                <h1> Pokedex</h1>
             </div>
-            <div class="site content-distance">
-                <div id="pokedex-gallery" class="pokedex-gallery">
 
+            <div class="input-wrapper">
+                <div id="alert" class="alert">
+                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                    Min 3 Zeichen eingeben!
                 </div>
-                <div>
-                    <button onclick="nextPokemon(10)" class="btn btn-primary mb-4">Next Pokemon</button>
+                <div class="input-container">
+                    <input id="search-input" type="text">
+                    <button onclick="filterPokemonDataFromName()">Search</button>
                 </div>
             </div>
-        </main>
-        <footer>
-            <div class="foot-container content-distance">Images created with Gen-Ai
-                <a href="impress.html">
-                    <h2>Impressum</h2>
-                </a>
+
+        </headsection>
+    </header>
+    <main>
+
+
+        <div id="spinner-overlay" class="spinner-overlay">
+            <div class="loader"></div>
+        </div>
+        <div id="overlay" class="overlay" onclick="closeOverlay()">
+            <div class="overlay-content" onclick="event.stopPropagation()">
+                <h3>Pokémon Details</h3>
+                <p>Hier kommen die Details des ausgewählten Pokémons hin.</p>
+                <button onclick="toggleOverlay()" class="btn btn-secondary">Schließen</button>
             </div>
-        </footer>
+        </div>
+        <div class="site content-distance">
+            <div id="pokedex-gallery" class="pokedex-gallery">
+
+            </div>
+            <div class="load-button-container">
+                <button onclick="nextBatchOfPokemon(20)" class="btn btn-primary mb-4">Next 20 Pokemon</button>
+                <form id="input-form-id" onsubmit="loadWithOffset()" class="load-with-offset">
+                    Von Pokemon Nr: 
+                    <Input id="offset-input" type="number" min="1" max="1013" required></Input>
+                    zu Pokemon Nr:
+                    <Input id="amount-input" type="number" min="1" max="1012" required></Input>
+                    <button type="submit" class="btn btn-primary mb-4">load</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <div class="foot-container content-distance">Images from Poke-Api
+            <a href="impress.html">
+                <h5>Impressum</h5>
+            </a>
+        </div>
+    </footer>
 </body>
 
 </html>

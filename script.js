@@ -1,4 +1,7 @@
+// Arrays
 let pokeData = [
+];
+let filterData = [
 ];
 const typeColors = {
     "normal": '#A8A77A',
@@ -23,38 +26,61 @@ const typeColors = {
     "unknown": '#68A090'
 };
 
+// Variables
 const URL_BASE_API = "https://pokeapi.co/api/v2/"
 const maxBaseStat = 255;
-let currentPokemonDisplayed = 0;
+let currentAmountOfPokemonDisplayed = 0;
+let currentOffset = 0;
+let overlayPokemonIndex = 0;
+let currentRenderArray = [];
+let inputForm = "";
 
+// init
+async function init() {
+    inputForm = document.getElementById("input-form-id");
+    showLoadingScreen();
+    await addNextBatchOfPokemonFromAPI(20);
+    hideLoadingScreen();
+    currentRenderArray = pokeData;
+    renderPokeDex();
+    inputForm.addEventListener('submit', submitForm);
+}
+
+function submitForm(event) {
+    event.preventDefault();
+}
+
+async function loadWithOffset() {
+    currentAmountOfPokemonDisplayed = 0;
+    startNumber = document.getElementById("offset-input").value;
+    endNumber = document.getElementById("amount-input").value;
+    if (endNumber > startNumber) {
+        currentOffset = startNumber;
+        showAmount = endNumber - startNumber;
+        showLoadingScreen();
+        await addNextBatchOfPokemonFromAPI(showAmount);
+        hideLoadingScreen();
+        currentRenderArray = pokeData;
+        renderPokeDex();
+    }
+}
+
+// API response
 async function getPokemonIndex(path = "") {
     let response = await fetch(URL_BASE_API + path);
     return responseToJson = await response.json();
 }
 
+// Get API URL
 function loadPokemonCountPath(newPokemonCount) {
-    currentPokemonDisplayed += newPokemonCount;
-
-    return "pokemon?limit=" + currentPokemonDisplayed + "&offset=0";
+    currentAmountOfPokemonDisplayed += newPokemonCount;
+    return "pokemon?limit=" + currentAmountOfPokemonDisplayed + "&offset=" + currentOffset;
 }
 
-async function init() {
-    await addNextPokemonFromAPI(2);
-
-    renderPokeDex();
-}
-
-async function nextPokemon() {
-    await addNextPokemonFromAPI(2);
-
-    renderPokeDex();
-}
-
-async function addNextPokemonFromAPI(count) {
+// Get API Data
+async function addNextBatchOfPokemonFromAPI(count) {
     let pokeResponse = await getPokemonIndex(loadPokemonCountPath(count));
-
     createPokedexArray(pokeResponse.results.length);
-
     for (let index = 0; index < pokeResponse.results.length; index++) {
         const pokemonDetails = pokeData[index];
         pokemonDetails.name = pokeResponse.results[index].name;
@@ -63,29 +89,105 @@ async function addNextPokemonFromAPI(count) {
     }
 }
 
-function writePokeData (index, apiData) {
+
+// Render Gallery
+function renderPokeDex() {
+    document.getElementById("pokedex-gallery").innerHTML = "";
+    currentRenderArray.forEach((element, index) => {
+        document.getElementById("pokedex-gallery").innerHTML += renderGallery(element, index);
+        renderInfoCard(element, index);
+        const cardElement = document.getElementById(`pokemon-card-${index}`);
+        setPokemonTypeColors([element.type1, element.type2], cardElement);
+    });
+}
+
+function showLoadingScreen() {
+    const loadingscreen = document.getElementById('spinner-overlay');
+    loadingscreen.style.display = 'flex';
+}
+
+function hideLoadingScreen() {
+    const loadingscreen = document.getElementById('spinner-overlay');
+    loadingscreen.style.display = 'none';
+}
+
+// Add more Pokemon to Gallery + Spinner
+async function nextBatchOfPokemon(count) {
+    showLoadingScreen();
+    await addNextBatchOfPokemonFromAPI(count);
+    hideLoadingScreen();
+    currentRenderArray = pokeData;
+    renderPokeDex();
+}
+
+// Make own array as dummy
+function createPokedexArray(count) {
+    pokeData = [];
+    for (let index = 0; index < count; index++) {
+        pokeData.push({ "id": index + 1, "imageSmall": "", "imageBig": "", "imageShiny": "", "name": "", "type1": "", "type2": "", "height": 0, "weight": 0, "hp": 0, "atk": 0, "def": 0, "spAtk": 0, "spDef": 0, "speed": 0 })
+    }
+}
+
+// Handle Search Input
+function filterPokemonDataFromName() {
+    const loadMorePokemon = document.getElementById("next-batch-pokemon")
+    const searchInput = document.getElementById("search-input");
+    if (searchInput.value.length == 0) {
+        currentRenderArray = pokeData;
+        loadMorePokemon.disabled = false;
+        document.getElementById("alert").style.display = "none";
+        renderPokeDex();
+    } else if (searchInput.value.length == 1 || searchInput.value.length == 2) {
+            document.getElementById("alert").style.display = "block";
+    } else {
+        currentRenderArray = filterData;
+        loadMorePokemon.disabled = true;
+        document.getElementById("alert").style.display = "none";
+        searchName = searchInput.value.toLowerCase();
+        let foundNames = pokeData.filter(pokemon => pokemon.name.toLowerCase().includes(searchName))
+        createFilterArray(foundNames);
+    }
+}
+
+// Make Array from Filtered Objects and Render
+function createFilterArray(tempArray) {
+    for (let index = 0; index < tempArray.length; index++) {
+        let normalDataIndex = tempArray[index].id - 1;
+        let tempPokemonCopy = { ...pokeData[normalDataIndex] };
+        filterData.push(tempPokemonCopy);
+    }
+    renderPokeDex();
+}
+
+// Fill array from Api
+function writePokeData(index, apiData) {
     const pokemonDetails = pokeData[index];
     pokemonDetails.type1 = apiData.types[0].type.name;
     pokemonDetails.type2 = apiData.types.length <= 1 ? "" : apiData.types[1].type.name;
     pokemonDetails.imageSmall = apiData.sprites.front_default;
+    writePokeDataOverlayBase(index, apiData);
+    writePokeDataOverlayStats(index, apiData);
+}
+
+function writePokeDataOverlayBase(index, apiData) {
+    const pokemonDetails = pokeData[index];
     pokemonDetails.imageBig = apiData.sprites.other["official-artwork"].front_default;
+    pokemonDetails.imageShiny = apiData.sprites.other["official-artwork"].front_shiny;
     pokemonDetails.height = apiData.height;
+    pokemonDetails.weight = apiData.weight;
+}
+
+function writePokeDataOverlayStats(index, apiData) {
+    const pokemonDetails = pokeData[index];
     pokemonDetails.hp = apiData.stats[0].base_stat;
     pokemonDetails.atk = apiData.stats[1].base_stat;
     pokemonDetails.def = apiData.stats[2].base_stat;
     pokemonDetails.spAtk = apiData.stats[3].base_stat;
     pokemonDetails.spDef = apiData.stats[4].base_stat;
     pokemonDetails.speed = apiData.stats[5].base_stat;
-    
 }
 
-function createPokedexArray(count) {
-    pokeData = [];
-    for (let index = 0; index < count; index++) {
-        pokeData.push({ "id": index + 1, "imageSmall": "", "name": "", "type1": "", "type2": "", "height": 0, "weight": 0, "hp": 0, "atk":0, "def":0, "spAtk":0, "spDef":0, "speed":0 })
-    }
-}
-
+// Get Icon URL
 async function fetchTypeIconsPath(type) {
     let pathIndex = 0;
     if (type != "unknown") {
@@ -98,47 +200,24 @@ async function fetchTypeIconsPath(type) {
     return path;
 }
 
-
-
-function renderPokeDex() {
-    document.getElementById("pokedex-gallery").innerHTML = "";
-    pokeData.forEach((element, index) => {
-        document.getElementById("pokedex-gallery").innerHTML +=
-            `<div onclick="showOverlay(${index})" class="pokemon-card d-flex" id="pokemon-card-${index}">
-                <div class="image-container">
-                    <div class="type-color type1 flex-grow-1"></div>
-                    <div class="type-color type2 flex-grow-1"></div>
-                    <img src="${element.imageSmall}" class="card-img-top" alt="Bild des Pokémons">
-                </div>
-            </div>`;
-        renderInfoCard(element, index);
-        const cardElement = document.getElementById(`pokemon-card-${index}`);
-        setPokemonTypeColors([element.type1, element.type2], cardElement);
-    });
+// Check Icon Types
+async function checkIconTypes(type) {
+    return type !="" ? await fetchTypeIconsPath(type) : "";
 }
 
+// Render Single Pokemon Card
 async function renderInfoCard(element, index) {
-    let iconPath1 = await fetchTypeIconsPath(element.type1);
-    let iconPath2 = "";
-    if (element.type2 != "") {
-        iconPath2 = await fetchTypeIconsPath(element.type2);
-    }
-
-    document.getElementById("pokemon-card-" + index).innerHTML += `
-        <div class="card-content">
-            <h5 class="card-title">${element.name}</h5>
-            <div class="card-text" id="type-text">Typ: 
-            <img src="${iconPath1}" alt="">
-            <img src="${iconPath2}" alt="">
-            </div>
-        </div>`
+    let iconPath1 = await checkIconTypes(element.type1);
+    let iconPath2 = await checkIconTypes(element.type2);
+    element.id = parseInt(element.id) + parseInt(currentOffset);
+    document.getElementById("pokemon-card-" + index).innerHTML += renderCard(iconPath1, iconPath2, element);
 }
 
+// Set Background Color
 function setPokemonTypeColors(types, cardElement) {
     const imageContainer = cardElement.querySelector('.image-container');
     const type1Element = imageContainer.querySelector('.type1');
     const type2Element = imageContainer.querySelector('.type2');
-
     if (types[1] != "") {
         type1Element.style.backgroundColor = typeColors[types[0]];
         type2Element.style.backgroundColor = typeColors[types[1]];
@@ -148,22 +227,30 @@ function setPokemonTypeColors(types, cardElement) {
     }
 }
 
-function showOverlay(index) {
+// Open Big Card
+async function showOverlay(index) {
+    overlayPokemonIndex = index;
     const overlay = document.getElementById('overlay');
     overlay.style.display = 'flex';
-    const pokemonDetails = pokeData[index];
+    const pokemonDetails = currentRenderArray[index];
     const stats = createStats(index);
     const progressBars = createProgressBars(stats);
-    overlay.querySelector('.overlay-content').innerHTML = renderOverlayContent(pokemonDetails, progressBars);
+    const type1 = await checkIconTypes(currentRenderArray[index].type1);
+    const type2 = await checkIconTypes(currentRenderArray[index].type2);
+    overlay.querySelector('.overlay-content').innerHTML = "";
+    overlay.querySelector('.overlay-content').innerHTML = renderOverlayContent(pokemonDetails, progressBars, type1, type2);
+    overlay.querySelector('.overlay-content').style.backgroundColor = typeColors[pokemonDetails.type1];
 }
 
+// Hide Big Card
 function closeOverlay() {
     const overlay = document.getElementById('overlay');
     overlay.style.display = 'none';
 }
 
+// Stat array for Progress Bars
 function createStats(index) {
-    const pokemonDetails = pokeData[index];
+    const pokemonDetails = currentRenderArray[index];
     const stats = {
         "HP": pokemonDetails.hp,
         "ATK": pokemonDetails.atk,
@@ -175,18 +262,49 @@ function createStats(index) {
     return stats;
 }
 
+// Make Progress Bars
 function createProgressBars(stats) {
     let progressBars = '';
     for (const [statName, statValue] of Object.entries(stats)) {
-        progressBars += `
-            <div class="stat-container">
-                <div class="me-3" style="width: 120px;">${statName}: ${statValue}</div>
-                <div class="progress flex-grow-1">
-                    <div class="progress-bar bg-info" role="progressbar" style="width: ${statValue / 255 * 100}%" aria-valuenow="${statValue}" aria-valuemin="0" aria-valuemax="255"></div>
-                </div>
-            </div>
-        `;
+        let color = getProgressColor(statValue);
+        progressBars += renderProgressBars(statName, statValue, color);
     }
     return progressBars;
+}
+
+// Progress Bar Color
+function getProgressColor(value) {
+    let green = Math.round((value / 255) * 255);
+    let red = 255 - green;
+    return `rgb(${red}, ${green}, 0)`;
+}
+
+// Next Big Pokemon Card
+async function showNextPokemon() {
+    if (overlayPokemonIndex == currentRenderArray.length - 1 && currentRenderArray != filterData) {
+        await nextBatchOfPokemon(1);
+        newIndex = overlayPokemonIndex + 1;
+    } else if (overlayPokemonIndex <= currentRenderArray.length - 2) {
+        newIndex = overlayPokemonIndex + 1;
+    }
+    showOverlay(newIndex);
+}
+
+// Prev Big Pokemon Card
+function showPreviousPokemon() {
+    if (overlayPokemonIndex != 0) {
+        newIndex = overlayPokemonIndex - 1;
+        showOverlay(newIndex);
+    }
+}
+
+// Make big image Shiny
+function toggleShiny(name) {
+    const imageRef = document.getElementById("big-image-"+ name);
+    currentRenderArray.forEach(element => {
+        if (element.name == name) {
+            imageRef.src = imageRef.src == element.imageBig ? element.imageShiny : element.imageBig;
+        }
+    });
 }
 
