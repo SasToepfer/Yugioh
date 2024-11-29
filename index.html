@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/vnd.icon" href="img/gamestorelogo.png">
     <link rel="shortcut icon" href="img/Viscora.png" type="image/x-icon">
-    <title>Pokedex</title>
+    <title>Yugioh</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="styles/pokedex.css">
+    <link rel="stylesheet" href="styles/yugiquiz.css">
     <script src="scripts/template.js"></script>
     <script src="script.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -24,53 +24,56 @@
         <headsection class="head-container content-distance">
             <div class="logo-container">
                 <img class="head-logo" src="img/Viscora.png" alt="gamestore logo">
-                <h1> Pokedex</h1>
+                <h1>YugiQuiz</h1>
             </div>
-
-            <div class="input-wrapper">
-                <div id="alert" class="alert">
-                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
-                    Min 3 Zeichen eingeben!
-                </div>
-                <div class="input-container">
-                    <input id="search-input" type="text">
-                    <button onclick="filterPokemonDataFromName()">Search</button>
-                </div>
+            <div class="dropdown">
+                <label for="question-select">Choose a question type:</label>
+                <select id="question-select">
+                    <option value="all">All</option>
+                    <option value="nameLength">Name Length</option>
+                    <option value="atk">ATK</option>
+                    <option value="def">DEF</option>
+                    <option value="level">Level</option>
+                    <option value="releaseDate">Release Date</option>
+                </select>
             </div>
-
         </headsection>
     </header>
     <main>
-
-
         <div id="spinner-overlay" class="spinner-overlay">
             <div class="loader"></div>
         </div>
-        <div id="overlay" class="overlay" onclick="closeOverlay()">
-            <div class="overlay-content" onclick="event.stopPropagation()">
-                <h3>Pokémon Details</h3>
-                <p>Hier kommen die Details des ausgewählten Pokémons hin.</p>
-                <button onclick="toggleOverlay()" class="btn btn-secondary">Schließen</button>
+    
+        <!-- Container für die Bilder -->
+        <div class="image-comparison-container">
+            <div class="card-container left-card">
+                <img id="left-image" class="card-image" src="" alt="Left Card">
+                <div>Tcg release: <span id="release-left">01-01-1000</span></div>
+            </div>
+            <div class="card-container right-card">
+                <div id="top-overlay" class="card-overlay top-overlay"></div>
+                <div id="bottom-overlay" class="card-overlay bottom-overlay"></div>
+                <img id="right-image" class="card-image" src="" alt="Right Card">
+                <div>Tcg release: <span id="release-right">xxxx-xx-xx</span></div>
             </div>
         </div>
-        <div class="site content-distance">
-            <div id="pokedex-gallery" class="pokedex-gallery">
-
+        <div class="game-area text-center content-distance">
+            <div class="button-container">
+                <button class="game-button" onclick="checkAnswer('less')" id="left-button">less</button>
+                <button class="game-button" onclick="checkAnswer('equal')" id="equal-button">equal</button>
+                <button class="game-button" onclick="checkAnswer('greater')" id="right-button">more</button>
             </div>
-            <div class="load-button-container">
-                <button onclick="nextBatchOfPokemon(20)" class="btn btn-primary mb-4">Next 20 Pokemon</button>
-                <form id="input-form-id" onsubmit="loadWithOffset()" class="load-with-offset">
-                    Von Pokemon Nr: 
-                    <Input id="offset-input" type="number" min="1" max="1013" required></Input>
-                    zu Pokemon Nr:
-                    <Input id="amount-input" type="number" min="1" max="1012" required></Input>
-                    <button type="submit" class="btn btn-primary mb-4">load</button>
-                </form>
+            <div id="score">0 Points</div>
+            <div class="question-container">
+                <h3 id="game-question">Welcher Name hat mehr Buchstaben?</h3>
+                <div id="next-button"></div>
             </div>
+            
         </div>
+        
     </main>
     <footer>
-        <div class="foot-container content-distance">Images from Poke-Api
+        <div class="foot-container content-distance"><a href="https://ygoprodeck.com/" target="_blank">Api: https://ygoprodeck.com/</a>
             <a href="impress.html">
                 <h5>Impressum</h5>
             </a>

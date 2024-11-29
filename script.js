@@ -1,104 +1,92 @@
 // Arrays
-let pokeData = [
-];
-let filterData = [
-];
-const typeColors = {
-    "normal": '#A8A77A',
-    "fighting": '#c22e28',
-    "flying": '#a98ff3',
-    "poison": '#a33ea1',
-    "ground": '#e2bf65',
-    "rock": '#b6a136',
-    "bug": '#a6b91a',
-    "ghost": '#735797',
-    "steel": '#B7B7CE',
-    "fire": '#ee8130',
-    "water": '#6390f0',
-    "grass": '#7ac74c',
-    "electric": '#f7d02c',
-    "psychic": '#f95587',
-    "ice": '#96d9d6',
-    "dragon": '#6f35fc',
-    "dark": '#705746',
-    "fairy": '#d685ad',
-    "stellar": '#40B5A5',
-    "unknown": '#68A090'
-};
+let YugiData = [];
+// Elemente für die Buttons und die Frage
+let gameQuestionElement = "";
+let leftCard = "";
+let rightCard = "";
+let leftButton;
+let equalButton;
+let rightButton;
+let score = 0;
+let currentQuestionIndex = -1;
+let lastQuestionIndex = -1;
+let selectedQuestionType = "all";
+let questions = [
+    "Does the right Cards <b>Name</b> have more, equal or less <b>charakters</b>?",
+    "Does the right Card have more, equal or less <b>atk</b>?",
+    "Does the right Card have more, equal or less <b>def</b>?",
+    "Does the right Card have more, equal or less <b>level</b>?",
+    "Does the right Card have earlier,equal or later <b>release Date</b>?"
+]
 
 // Variables
-const URL_BASE_API = "https://pokeapi.co/api/v2/"
-const maxBaseStat = 255;
-let currentAmountOfPokemonDisplayed = 0;
-let currentOffset = 0;
-let overlayPokemonIndex = 0;
-let currentRenderArray = [];
-let inputForm = "";
+const URL_BASE_API = "https://db.ygoprodeck.com/api/v7/cardinfo.php?&misc=yes"
 
 // init
 async function init() {
-    inputForm = document.getElementById("input-form-id");
+
     showLoadingScreen();
-    await addNextBatchOfPokemonFromAPI(20);
+    await GetNameArrayFromApi();
+    loadRandomCards();
+    setGlobalvariables();
+    setQuestion();
     hideLoadingScreen();
-    currentRenderArray = pokeData;
-    renderPokeDex();
-    inputForm.addEventListener('submit', submitForm);
 }
 
-function submitForm(event) {
-    event.preventDefault();
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max)
 }
 
-async function loadWithOffset() {
-    currentAmountOfPokemonDisplayed = 0;
-    startNumber = document.getElementById("offset-input").value;
-    endNumber = document.getElementById("amount-input").value;
-    if (endNumber > startNumber) {
-        currentOffset = startNumber;
-        showAmount = endNumber - startNumber;
-        showLoadingScreen();
-        await addNextBatchOfPokemonFromAPI(showAmount);
-        hideLoadingScreen();
-        currentRenderArray = pokeData;
-        renderPokeDex();
-    }
+function setGlobalvariables() {
+    gameQuestionElement = document.getElementById('game-question');
+    leftButton = document.getElementById('left-button');
+    equalButton = document.getElementById('equal-button');
+    rightButton = document.getElementById('right-button');
+    document.getElementById("question-select").addEventListener("change", (event) => {
+        selectedQuestionType = event.target.value;
+        console.log(`Selected question type: ${selectedQuestionType}`);
+    });
 }
 
 // API response
-async function getPokemonIndex(path = "") {
-    let response = await fetch(URL_BASE_API + path);
+async function getYugiIndex() {
+    let response = await fetch(URL_BASE_API);
     return responseToJson = await response.json();
-}
 
-// Get API URL
-function loadPokemonCountPath(newPokemonCount) {
-    currentAmountOfPokemonDisplayed += newPokemonCount;
-    return "pokemon?limit=" + currentAmountOfPokemonDisplayed + "&offset=" + currentOffset;
 }
 
 // Get API Data
-async function addNextBatchOfPokemonFromAPI(count) {
-    let pokeResponse = await getPokemonIndex(loadPokemonCountPath(count));
-    createPokedexArray(pokeResponse.results.length);
-    for (let index = 0; index < pokeResponse.results.length; index++) {
-        const pokemonDetails = pokeData[index];
-        pokemonDetails.name = pokeResponse.results[index].name;
-        let singlePokeResponse = await getPokemonIndex("pokemon/" + pokemonDetails.name + "/");
-        writePokeData(index, singlePokeResponse);
+async function GetNameArrayFromApi() {
+    let yugiResponse = await getYugiIndex();
+
+    createYugiArray(yugiResponse.data.length);
+    for (let index = 0; index < yugiResponse.data.length; index++) {
+        const yugiDetails = YugiData[index];
+        const ApiDetails = yugiResponse.data[index];
+        yugiDetails.name = ApiDetails.name;
+        yugiDetails.atk = ApiDetails.atk;
+        yugiDetails.def = ApiDetails.def;
+        yugiDetails.level = ApiDetails.level;
+        yugiDetails.type = ApiDetails.type;
+        yugiDetails.date = ApiDetails.misc_info[0]?.tcg_date;
+        yugiDetails.imageBig = ApiDetails.card_images[0].image_url;
     }
+    YugiData = YugiData.filter(card =>
+        card.date !== undefined &&
+        card.type !== 'Spell Card' &&
+        card.type !== 'Trap Card' &&
+        card.type !== 'Link Monster' &&
+        card.type !== 'Skill Card'
+    );
+
 }
 
-
-// Render Gallery
-function renderPokeDex() {
-    document.getElementById("pokedex-gallery").innerHTML = "";
-    currentRenderArray.forEach((element, index) => {
-        document.getElementById("pokedex-gallery").innerHTML += renderGallery(element, index);
-        renderInfoCard(element, index);
-        const cardElement = document.getElementById(`pokemon-card-${index}`);
-        setPokemonTypeColors([element.type1, element.type2], cardElement);
-    });
+// Make own array as dummy
+function createYugiArray(count) {
+    YugiData = [];
+    for (let index = 0; index < count; index++) {
+        YugiData.push({ "id": index + 1, "type": "", "imageSmall": "", "imageBig": "", "name": "", "date": "", "level": 0, "atk": 0, "def": 0, })
+    }
 }
 
 function showLoadingScreen() {
@@ -111,200 +99,191 @@ function hideLoadingScreen() {
     loadingscreen.style.display = 'none';
 }
 
-// Add more Pokemon to Gallery + Spinner
-async function nextBatchOfPokemon(count) {
-    showLoadingScreen();
-    await addNextBatchOfPokemonFromAPI(count);
-    hideLoadingScreen();
-    currentRenderArray = pokeData;
-    renderPokeDex();
-}
+function adjustOverlay() {
+    const overlays = document.querySelectorAll('.card-overlay');
 
-// Make own array as dummy
-function createPokedexArray(count) {
-    pokeData = [];
-    for (let index = 0; index < count; index++) {
-        pokeData.push({ "id": index + 1, "imageSmall": "", "imageBig": "", "imageShiny": "", "name": "", "type1": "", "type2": "", "height": 0, "weight": 0, "hp": 0, "atk": 0, "def": 0, "spAtk": 0, "spDef": 0, "speed": 0 })
-    }
-}
-
-// Handle Search Input
-function filterPokemonDataFromName() {
-    const loadMorePokemon = document.getElementById("next-batch-pokemon")
-    const searchInput = document.getElementById("search-input");
-    if (searchInput.value.length == 0) {
-        currentRenderArray = pokeData;
-        loadMorePokemon.disabled = false;
-        document.getElementById("alert").style.display = "none";
-        renderPokeDex();
-    } else if (searchInput.value.length == 1 || searchInput.value.length == 2) {
-            document.getElementById("alert").style.display = "block";
-    } else {
-        currentRenderArray = filterData;
-        loadMorePokemon.disabled = true;
-        document.getElementById("alert").style.display = "none";
-        searchName = searchInput.value.toLowerCase();
-        let foundNames = pokeData.filter(pokemon => pokemon.name.toLowerCase().includes(searchName))
-        createFilterArray(foundNames);
-    }
-}
-
-// Make Array from Filtered Objects and Render
-function createFilterArray(tempArray) {
-    for (let index = 0; index < tempArray.length; index++) {
-        let normalDataIndex = tempArray[index].id - 1;
-        let tempPokemonCopy = { ...pokeData[normalDataIndex] };
-        filterData.push(tempPokemonCopy);
-    }
-    renderPokeDex();
-}
-
-// Fill array from Api
-function writePokeData(index, apiData) {
-    const pokemonDetails = pokeData[index];
-    pokemonDetails.type1 = apiData.types[0].type.name;
-    pokemonDetails.type2 = apiData.types.length <= 1 ? "" : apiData.types[1].type.name;
-    pokemonDetails.imageSmall = apiData.sprites.front_default;
-    writePokeDataOverlayBase(index, apiData);
-    writePokeDataOverlayStats(index, apiData);
-}
-
-function writePokeDataOverlayBase(index, apiData) {
-    const pokemonDetails = pokeData[index];
-    pokemonDetails.imageBig = apiData.sprites.other["official-artwork"].front_default;
-    pokemonDetails.imageShiny = apiData.sprites.other["official-artwork"].front_shiny;
-    pokemonDetails.height = apiData.height;
-    pokemonDetails.weight = apiData.weight;
-}
-
-function writePokeDataOverlayStats(index, apiData) {
-    const pokemonDetails = pokeData[index];
-    pokemonDetails.hp = apiData.stats[0].base_stat;
-    pokemonDetails.atk = apiData.stats[1].base_stat;
-    pokemonDetails.def = apiData.stats[2].base_stat;
-    pokemonDetails.spAtk = apiData.stats[3].base_stat;
-    pokemonDetails.spDef = apiData.stats[4].base_stat;
-    pokemonDetails.speed = apiData.stats[5].base_stat;
-}
-
-// Get Icon URL
-async function fetchTypeIconsPath(type) {
-    let pathIndex = 0;
-    if (type != "unknown") {
-        pathIndex = Object.keys(typeColors).indexOf(type) + 1
-    } else {
-        pathIndex = 10001;
-    }
-    let pokeResponseType = await getPokemonIndex("type/" + pathIndex);
-    let path = pokeResponseType.sprites["generation-iii"].xd.name_icon;
-    return path;
-}
-
-// Check Icon Types
-async function checkIconTypes(type) {
-    return type !="" ? await fetchTypeIconsPath(type) : "";
-}
-
-// Render Single Pokemon Card
-async function renderInfoCard(element, index) {
-    let iconPath1 = await checkIconTypes(element.type1);
-    let iconPath2 = await checkIconTypes(element.type2);
-    element.id = parseInt(element.id) + parseInt(currentOffset);
-    document.getElementById("pokemon-card-" + index).innerHTML += renderCard(iconPath1, iconPath2, element);
-}
-
-// Set Background Color
-function setPokemonTypeColors(types, cardElement) {
-    const imageContainer = cardElement.querySelector('.image-container');
-    const type1Element = imageContainer.querySelector('.type1');
-    const type2Element = imageContainer.querySelector('.type2');
-    if (types[1] != "") {
-        type1Element.style.backgroundColor = typeColors[types[0]];
-        type2Element.style.backgroundColor = typeColors[types[1]];
-    } else {
-        type1Element.style.backgroundColor = typeColors[types[0]];
-        type2Element.style.backgroundColor = typeColors[types[0]];
-    }
-}
-
-// Open Big Card
-async function showOverlay(index) {
-    overlayPokemonIndex = index;
-    const overlay = document.getElementById('overlay');
-    overlay.style.display = 'flex';
-    const pokemonDetails = currentRenderArray[index];
-    const stats = createStats(index);
-    const progressBars = createProgressBars(stats);
-    const type1 = await checkIconTypes(currentRenderArray[index].type1);
-    const type2 = await checkIconTypes(currentRenderArray[index].type2);
-    overlay.querySelector('.overlay-content').innerHTML = "";
-    overlay.querySelector('.overlay-content').innerHTML = renderOverlayContent(pokemonDetails, progressBars, type1, type2);
-    overlay.querySelector('.overlay-content').style.backgroundColor = typeColors[pokemonDetails.type1];
-}
-
-// Hide Big Card
-function closeOverlay() {
-    const overlay = document.getElementById('overlay');
-    overlay.style.display = 'none';
-}
-
-// Stat array for Progress Bars
-function createStats(index) {
-    const pokemonDetails = currentRenderArray[index];
-    const stats = {
-        "HP": pokemonDetails.hp,
-        "ATK": pokemonDetails.atk,
-        "DEF": pokemonDetails.def,
-        "SP-ATK": pokemonDetails.spAtk,
-        "SP-DEF": pokemonDetails.spDef,
-        "SPEED": pokemonDetails.speed
-    };
-    return stats;
-}
-
-// Make Progress Bars
-function createProgressBars(stats) {
-    let progressBars = '';
-    for (const [statName, statValue] of Object.entries(stats)) {
-        let color = getProgressColor(statValue);
-        progressBars += renderProgressBars(statName, statValue, color);
-    }
-    return progressBars;
-}
-
-// Progress Bar Color
-function getProgressColor(value) {
-    let green = Math.round((value / 255) * 255);
-    let red = 255 - green;
-    return `rgb(${red}, ${green}, 0)`;
-}
-
-// Next Big Pokemon Card
-async function showNextPokemon() {
-    if (overlayPokemonIndex == currentRenderArray.length - 1 && currentRenderArray != filterData) {
-        await nextBatchOfPokemon(1);
-        newIndex = overlayPokemonIndex + 1;
-    } else if (overlayPokemonIndex <= currentRenderArray.length - 2) {
-        newIndex = overlayPokemonIndex + 1;
-    }
-    showOverlay(newIndex);
-}
-
-// Prev Big Pokemon Card
-function showPreviousPokemon() {
-    if (overlayPokemonIndex != 0) {
-        newIndex = overlayPokemonIndex - 1;
-        showOverlay(newIndex);
-    }
-}
-
-// Make big image Shiny
-function toggleShiny(name) {
-    const imageRef = document.getElementById("big-image-"+ name);
-    currentRenderArray.forEach(element => {
-        if (element.name == name) {
-            imageRef.src = imageRef.src == element.imageBig ? element.imageShiny : element.imageBig;
+    overlays.forEach(overlay => {
+        const cardImage = overlay.nextElementSibling; 
+        if (cardImage.complete) {
+            const overlayHeight = cardImage.clientHeight * 0.2;
+            overlay.style.height = `${overlayHeight}px`;
+        } else {
+            cardImage.onload = () => {
+                const overlayHeight = cardImage.clientHeight * 0.2;
+                overlay.style.height = `${overlayHeight}px`;
+            };
         }
     });
 }
 
+function loadRandomCards() {
+    // Karten aus dem Array holen
+    leftCard = YugiData[getRandomInt(YugiData.length)];
+    rightCard = YugiData[getRandomInt(YugiData.length)];
+    // Bilder und Daten setzen
+    document.getElementById("left-image").src = leftCard.imageBig;
+    document.getElementById("left-image").alt = leftCard.name;
+    document.getElementById("release-left").innerHTML = leftCard.date;
+    document.getElementById("right-image").src = rightCard.imageBig;
+    document.getElementById("right-image").alt = rightCard.name;
+
+}
+
+function setQuestion() {
+    // Prüfen, ob eine spezifische Frage ausgewählt wurde
+    if (selectedQuestionType === "all") {
+        // Zufällige Frage aus allen Fragen auswählen
+        do {
+            currentQuestionIndex = getRandomInt(questions.length);
+        } while (currentQuestionIndex === lastQuestionIndex); // Keine Wiederholung
+    } else {
+        // Spezifische Frage basierend auf dem Dropdown auswählen
+        const questionMapping = {
+            nameLength: 0,
+            atk: 1,
+            def: 2,
+            level: 3,
+            releaseDate: 4
+        };
+        currentQuestionIndex = questionMapping[selectedQuestionType];
+    }
+
+    // Frage anzeigen
+    lastQuestionIndex = currentQuestionIndex; // Aktualisiere letzte Frage
+    gameQuestionElement.innerHTML = questions[currentQuestionIndex];
+}
+
+function checkAnswer(buttonParam) {
+    let answer = false;
+    switch (buttonParam) {
+        case "less": answer = checkAnswerForLess(); break;
+        case "equal": answer = checkAnswerForEqual(); break;
+        case "greater": answer = checkAnswerForGreater(); break;
+    }
+    displayAnswer(answer);
+    disabledButtons(true);
+}
+
+function checkForRightAnswer() {
+    if (checkAnswerForLess()) {
+        return currentQuestionIndex != 4 ? "less" : "earlier";
+    } else if (checkAnswerForEqual()) {
+        return "equal"
+    } else {
+        return currentQuestionIndex != 4 ? "higher" : "later";
+    }
+}
+
+function displayAnswer(bool) {
+    const rightCardOverlayTop = document.getElementById("top-overlay");
+    const rightCardOverlayBottom = document.getElementById("bottom-overlay");
+    const scoreText = document.getElementById("score");
+    const releaseText = document.getElementById("release-right");
+
+    gameQuestionElement.innerHTML = bool ? "Correct" : "Wrong " + checkForRightAnswer();
+    document.getElementById("next-button").innerHTML = `<button class="game-button" onclick="nextQuestion()">Next</button>`;
+    if (bool) {
+        gameQuestionElement.classList.add("c-green");
+    } else {
+        gameQuestionElement.classList.add("c-red");
+        score = 0;
+    }
+    scoreText.innerHTML = score + " points";
+    releaseText.innerHTML = rightCard.date;
+    rightCardOverlayTop.classList.add("d-none");
+    rightCardOverlayBottom.classList.add("d-none");
+}
+
+function hideAnswer() {
+    const rightCardOverlayTop = document.getElementById("top-overlay");
+    const rightCardOverlayBottom = document.getElementById("bottom-overlay");
+    const releaseText = document.getElementById("release-right");
+    releaseText.innerHTML = `xxxx-xx-xx`;
+    rightCardOverlayTop.classList.remove("d-none");
+    rightCardOverlayBottom.classList.remove("d-none");
+    gameQuestionElement.classList.remove("c-green");
+    gameQuestionElement.classList.remove("c-red");
+    document.getElementById("next-button").innerHTML = "";
+}
+
+function disabledButtons(bool) {
+    leftButton.disabled = bool;
+    equalButton.disabled = bool;
+    rightButton.disabled = bool;
+}
+
+function nextQuestion() {
+    hideAnswer();
+    moveCardsAndLoadNew();
+    setQuestion();
+    disabledButtons(false);
+}
+
+function setScore(bool) {
+    if (bool) {
+        score++;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function checkAnswerForLess() {
+    switch (currentQuestionIndex) {
+        case 0: return setScore(leftCard.name.length > rightCard.name.length);
+        case 1: return setScore(leftCard.atk > rightCard.atk);
+        case 2: return setScore(leftCard.def > rightCard.def);
+        case 3: return setScore(leftCard.level > rightCard.level);
+        case 4: return setScore(leftCard.date > rightCard.date);
+        default:
+            break;
+    }
+}
+
+function checkAnswerForEqual() {
+    switch (currentQuestionIndex) {
+        case 0: return setScore(leftCard.name.length == rightCard.name.length);
+        case 1: return setScore(leftCard.atk == rightCard.atk);
+        case 2: return setScore(leftCard.def == rightCard.def);
+        case 3: return setScore(leftCard.level == rightCard.level);
+        case 4: return setScore(leftCard.date == rightCard.date);
+        default:
+            break;
+    }
+}
+
+function checkAnswerForGreater() {
+    switch (currentQuestionIndex) {
+        case 0: return setScore(leftCard.name.length < rightCard.name.length);
+        case 1: return setScore(leftCard.atk < rightCard.atk);
+        case 2: return setScore(leftCard.def < rightCard.def);
+        case 3: return setScore(leftCard.level < rightCard.level);
+        case 4: return setScore(leftCard.date < rightCard.date);
+        default:
+            break;
+    }
+}
+
+
+
+function moveCardsAndLoadNew() {
+
+    const leftCardImage = document.getElementById("left-image");
+    const rightCardImage = document.getElementById("right-image");
+
+
+
+    // Neue Karte für die rechte Seite auswählen
+    leftCard = rightCard;
+    rightCard = YugiData[Math.floor(Math.random() * YugiData.length)];
+
+    // Die rechte Karte übernimmt die linke Position
+    leftCardImage.src = leftCard.imageBig;
+    leftCardImage.alt = leftCard.name;
+    document.getElementById("release-left").innerHTML = leftCard.date;
+
+    // Neue Karte für die rechte Seite laden
+    rightCardImage.src = rightCard.imageBig;
+    rightCardImage.alt = rightCard.name;
+    // document.getElementById("release-right").innerHTML = rightCard.date;
+}

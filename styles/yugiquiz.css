@@ -1,0 +1,149 @@
+.image-comparison-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px;
+}
+
+.dropdown {
+  margin-top: 10px;
+  display: inline-block;
+  margin-left: 20px;
+}
+
+#question-select {
+  padding: 5px;
+  font-size: 14px;
+}
+
+/* Allgemeines Overlay-Design */
+.card-overlay {
+  position: absolute;
+  width: 66%;
+  background-color: rgba(0, 0, 0, 1); /* Schwarzes Overlay mit Transparenz */
+  z-index: 2; /* Über das Bild legen */
+  pointer-events: none; /* Overlay soll keine Klicks blockieren */
+}
+
+/* Oberes Overlay */
+.top-overlay {
+  top: 1rem; /* Oben positionieren */
+  height: 15%; /* Fixe Höhe für den oberen Bereich */
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+/* Unteres Overlay */
+.bottom-overlay {
+  bottom: 12%; /* Unten positionieren */
+  height: 8%; /* Fixe Höhe für den unteren Bereich */
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+#score {
+  font-size: 2rem;
+}
+
+/* Karten-Container bleibt unverändert */
+.card-container {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Karten-Bild */
+.card-image {
+  max-width: 75%;
+  max-height: 30rem;
+  object-fit: contain;
+  border: 2px solid #000;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.game-area {
+  /* border: 2px solid black; */
+  /* border-radius: 12px; */
+  height: 10rem;
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.question-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+  height: 20rem;
+  color: white;
+}
+.question-container button {
+  padding: 6% 12%;
+}
+
+#game-question {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.game-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 3% 6%;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.game-button:hover {
+  background-color: #0056b3;
+}
+
+.game-button:active {
+  background-color: #003f7f;
+}
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+  
+.spinner-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 3;
+  justify-content: center;
+  align-items: center;
+}
